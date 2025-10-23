@@ -6,29 +6,27 @@
 /* appearance */
 static const int sloppyfocus               = 1;  /* focus follows mouse */
 static const int bypass_surface_visibility = 0;  /* 1 means idle inhibitors will disable idle tracking even if it's surface isn't visible  */
-static const int smartgaps                 = 0;  /* 1 means no outer gap when there is only one window */
 static const unsigned int systrayspacing   = 2; /* systray spacing */
 static const int showsystray               = 1; /* 0 means no systray */
+static const int smartgaps                 = 0;  /* 1 means no outer gap when there is only one window */
 static const int monoclegaps               = 0;  /* 1 means outer gaps in monocle layout */
-static const unsigned int borderpx         = 1;  /* border pixel of windows */
+static const unsigned int borderpx         = 2;  /* border pixel of windows */
 static const unsigned int gappih           = 10; /* horiz inner gap between windows */
 static const unsigned int gappiv           = 10; /* vert inner gap between windows */
 static const unsigned int gappoh           = 10; /* horiz outer gap between windows and screen edge */
 static const unsigned int gappov           = 10; /* vert outer gap between windows and screen edge */
 static const int showbar                   = 1; /* 0 means no bar */
-static const int topbar                    = 1; /* 0 means bottom bar */
-static const char *fonts[]                 = {"monospace:size=10"};
+static const int topbar                    = 0; /* 0 means bottom bar */
+static const char *fonts[]                 = {"JetBrains Mono:size=12"};
 static const float rootcolor[]             = COLOR(0x000000ff);
 /* This conforms to the xdg-protocol. Set the alpha to zero to restore the old behavior */
 static const float fullscreen_bg[]         = {0.0f, 0.0f, 0.0f, 1.0f}; /* You can also use glsl colors */
-static uint32_t colors[][3]                = {
-	/*               fg          bg          border    */
-	[SchemeNorm] = { 0xbbbbbbff, 0x222222ff, 0x444444ff },
-	[SchemeSel]  = { 0xeeeeeeff, 0x005577ff, 0x005577ff },
-	[SchemeUrg]  = { 0,          0,          0x770000ff },
-};
-
-/* tagging */
+static uint32_t colors[][3] = {
+    /*               fg          bg          border    */
+    [SchemeNorm] = { 0xe8d4b8ff, 0x1a1428ff, 0x3d2a54ff }, // normal: warm text on deep twilight
+    [SchemeSel]  = { 0xffd699ff, 0x5a3a78ff, 0xc77dffff }, // selected: golden on purple with bright portal border
+    [SchemeUrg]  = { 0xffe6d3ff, 0x663344ff, 0xff8c42ff }, // urgent: warm white on dark red-purple with sunset border
+};/* tagging */
 static char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 
 /* logging */
@@ -46,19 +44,12 @@ static const int resize_corner = 4;
 static const int warp_cursor = 1;	/* 1: warp to corner, 0: don’t warp */
 static const int lock_cursor = 0;	/* 1: lock cursor, 0: don't lock */
 
-/* Autostart */
-static const char *const autostart[] = {
-        "wbg", "/path/to/your/image", NULL,
-        NULL /* terminate */
-};
-
-
 /* NOTE: ALWAYS keep a rule declared even if you don't use rules (e.g leave at least one example) */
 static const Rule rules[] = {
 	/* app_id             title       tags mask     isfloating   monitor */
 	/* examples: */
 	{ "Gimp_EXAMPLE",     NULL,       0,            1,           -1 }, /* Start on currently visible tags floating, not tiled */
-	{ "firefox_EXAMPLE",  NULL,       1 << 8,       0,           -1 }, /* Start on ONLY tag "9" */
+	{ "vesktop",  NULL,       1 << 8,       0,           -1 }, /* Start on ONLY tag "9" */
 };
 
 /* layout(s) */
@@ -130,8 +121,8 @@ static const uint32_t send_events_mode = LIBINPUT_CONFIG_SEND_EVENTS_ENABLED;
 LIBINPUT_CONFIG_ACCEL_PROFILE_FLAT
 LIBINPUT_CONFIG_ACCEL_PROFILE_ADAPTIVE
 */
-static const enum libinput_config_accel_profile accel_profile = LIBINPUT_CONFIG_ACCEL_PROFILE_ADAPTIVE;
-static const double accel_speed = 0.0;
+static const enum libinput_config_accel_profile accel_profile = LIBINPUT_CONFIG_ACCEL_PROFILE_FLAT;
+static const double accel_speed = 0.2;
 
 /* You can choose between:
 LIBINPUT_CONFIG_TAP_MAP_LRM -- 1/2/3 finger tap maps to left/right/middle
@@ -140,7 +131,17 @@ LIBINPUT_CONFIG_TAP_MAP_LMR -- 1/2/3 finger tap maps to left/middle/right
 static const enum libinput_config_tap_button_map button_map = LIBINPUT_CONFIG_TAP_MAP_LRM;
 
 /* If you want to use the windows key for MODKEY, use WLR_MODIFIER_LOGO */
-#define MODKEY WLR_MODIFIER_ALT
+#define MODKEY WLR_MODIFIER_LOGO
+
+/* Autostart */
+static const char *const autostart[] = {
+        "setwallpaper",  "/home/sketched/.local/share/backgrounds/mc.png", NULL,
+        "vesktop", "--ozone-platform=wayland", NULL,
+	"wl-gammactl" ,"-c", "0.982" ,"-b", "0.896", "-g", "1.625", NULL,
+	"makorun" , NULL,
+	NULL /* terminate */
+};
+
 
 #define TAGKEYS(KEY,SKEY,TAG) \
 	{ MODKEY,                    KEY,            view,            {.ui = 1 << TAG} }, \
@@ -153,8 +154,8 @@ static const enum libinput_config_tap_button_map button_map = LIBINPUT_CONFIG_TA
 
 /* commands */
 static const char *termcmd[] = { "foot", NULL };
-static const char *menucmd[] = { "wmenu-run", NULL };
-static const char *dmenucmd[] = { "wmenu", NULL };
+static const char *menucmd[] = { "rofi","-show","drun", NULL };
+static const char *dmenucmd[] = { "rofi","-dmenu", NULL };
 
 static const Key keys[] = {
 	/* Note that Shift changes certain key codes: c -> C, 2 -> at, etc. */
@@ -233,5 +234,5 @@ static const Button buttons[] = {
 	{ ClkTagBar,   MODKEY, BTN_LEFT,   tag,            {0} },
 	{ ClkTagBar,   MODKEY, BTN_RIGHT,  toggletag,      {0} },
 	{ ClkTray,     0,      BTN_LEFT,   trayactivate,   {0} },
-	{ ClkTray,     0,      BTN_RIGHT,  traymenu,       {0} },
+        { ClkTray,     0,      BTN_RIGHT,  traymenu,       {0} },
 };
